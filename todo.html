@@ -1,189 +1,150 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>To-Do List</title>
+  <meta charset="UTF-8">
+  <title>To-Do List - Enable/Disable Status</title>
   <style>
-    table, th, td {
-      border: 0px solid green;
-      border-collapse: collapse;
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    .form-container {
+      max-width: 400px;
+      margin: 20px auto;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .form-group input,
+    .form-group select {
       padding: 6px;
+      font-size: 14px;
+    }
+
+    .form-group button {
+      margin-top: 8px;
+      padding: 6px 12px;
+      font-size: 14px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .form-group button:hover {
+      background-color: #0056b3;
+    }
+
+    table {
+      width: 90%;
+      margin: 20px auto;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #f2f2f2;
     }
   </style>
 </head>
 <body>
+
+  <div class="form-container">
+    <h2>To-Do Form</h2>
+    <form id="todoForm">
+      <div class="form-group">
+        <label for="todoDate">Date:</label>
+        <input type="date" id="todoDate" required>
+      </div>
+
+      <div class="form-group">
+        <label for="description">ToDo:</label>
+        <input type="text" id="description" required>
+      </div>
+
+      <div class="form-group">
+        <label for="targetTime">Target Date & Time:</label>
+        <input type="datetime-local" id="targetTime" required>
+      </div>
+
+      <div class="form-group">
+        <label for="status">Status:</label>
+        <select id="status" disabled>
+          <option value="Pending" selected>Pending</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Completed">Completed</option>
+        </select>
+        <button type="button" id="toggleStatus">Enable Status</button>
+      </div>
+
+      <div class="form-group" style="align-items: center;">
+        <button type="submit">SUBMIT</button>
+      </div>
+    </form>
+  </div>
+
   <table>
-    <tr>
-        <td><label>Date:</label></td>
-        <td><input type="date" id="date"></td>
-    </tr>
-    <tr>
-        <td><label>ToDo: </label></td>
-        <td><input type="text" id="todo"></td>
-    </tr>
-    <tr>
-        <td><label>Target Date & Time:</label></td>
-        <td><input type="datetime-local" id="target"></td>
-    </tr>
-    <tr>
-        <td><label>Status: </label></td>
-        <td><input type="text" id="status" disabled></td>
-    </tr>
-    <tr>
-        <td></td>
-        <td><button onclick="addNewTodo()">SUBMIT</button></td>
-    </tr>
-  </table>
-  <br>
-  <table id="todoTable" border="1" style="width:100%">
-      <thead>
+    <thead>
       <tr>
         <th>ID</th>
         <th>ToDo Desc</th>
         <th>Target Date</th>
         <th>Status</th>
-        <th>Actions</th>
       </tr>
-      </thead>
-      <tbody>
-      </tbody>
+    </thead>
+    <tbody id="todoTableBody">
+      <!-- Rows will be inserted here -->
+    </tbody>
   </table>
+
   <script>
-    var todoList=[
-      {
-        todoId:35,
-        todoDesc : "complete the project",
-        targetDate : "2025-07-30 11:35",
-        todoStatus : "PENDING",
-        createDate : "2025-07-29 10:00"
-      },
-      {
-        todoId:9,
-        todoDesc : "review the code",
-        targetDate : "2025-07-30 12:40",
-        todoStatus : "COMPLETE",
-        createDate : "2025-07-29 10:00"
-      },
-      {
-        todoId:5,
-        todoDesc : "test the application",
-        targetDate : "2025-07-30 1:40",
-        todoStatus : "IN-PROGRESS",
-        createDate : "2025-07-29 10:00"
-      }
-    ];
+    let todoList = [];
+    let todoId = 1;
 
-    function getMaxTodoId(max, value) {
-      return max.todoId > value.todoId ? max : value;
-    }
-    var maxObj = todoList.reduce(getMaxTodoId);
-    var todoId = maxObj.todoId;
+    document.getElementById("toggleStatus").addEventListener("click", function () {
+      const statusSelect = document.getElementById("status");
+      statusSelect.disabled = !statusSelect.disabled;
+      this.textContent = statusSelect.disabled ? "Enable Status" : "Disable Status";
+    });
 
-    var editIndex = null; // Track which item is being edited
+    document.getElementById("todoForm").addEventListener("submit", function (e) {
+      e.preventDefault();
 
-    function renderListTable(value, index, array){
-      var newTodoTr = document.createElement("tr");
+      const desc = document.getElementById("description").value;
+      const target = document.getElementById("targetTime").value;
+      const status = document.getElementById("status").value;
 
-      var newTodoIdTd = document.createElement("td");
-      newTodoIdTd.innerText = value.todoId;
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${todoId++}</td>
+        <td>${desc}</td>
+        <td>${new Date(target).toLocaleString()}</td>
+        <td>${status}</td>
+      `;
 
-      var newTodoDescTd = document.createElement("td");
-      newTodoDescTd.innerText = value.todoDesc;
-
-      var newTodoTargetDateTd = document.createElement("td");
-      newTodoTargetDateTd.innerText = value.targetDate;
-
-      var newTodoStatusTd = document.createElement("td");
-      newTodoStatusTd.innerText = value.todoStatus;
-
-      // Actions cell
-      var actionsTd = document.createElement("td");
-
-      // Edit button
-      var editBtn = document.createElement("button");
-      editBtn.innerText = "Edit";
-      editBtn.onclick = function() {
-        document.getElementById("todo").value = value.todoDesc;
-        document.getElementById("target").value = value.targetDate;
-        document.getElementById("status").value = value.todoStatus;
-        editIndex = index;
-      };
-      actionsTd.appendChild(editBtn);
-
-      // Pending button
-      var pendingBtn = document.createElement("button");
-      pendingBtn.innerText = "Pending";
-      pendingBtn.disabled = value.todoStatus === "PENDING";
-      pendingBtn.onclick = function() {
-        value.todoStatus = "PENDING";
-        renderTodoItems(todoList);
-      };
-      actionsTd.appendChild(pendingBtn);
-
-      // In-Progress button
-      var inProgressBtn = document.createElement("button");
-      inProgressBtn.innerText = "In-Progress";
-      inProgressBtn.disabled = value.todoStatus === "IN-PROGRESS";
-      inProgressBtn.onclick = function() {
-        value.todoStatus = "IN-PROGRESS";
-        renderTodoItems(todoList);
-      };
-      actionsTd.appendChild(inProgressBtn);
-
-      // Complete button
-      var completeBtn = document.createElement("button");
-      completeBtn.innerText = "Complete";
-      completeBtn.disabled = value.todoStatus === "COMPLETE";
-      completeBtn.onclick = function() {
-        value.todoStatus = "COMPLETE";
-        renderTodoItems(todoList);
-      };
-      actionsTd.appendChild(completeBtn);
-
-      newTodoTr.appendChild(newTodoIdTd);
-      newTodoTr.appendChild(newTodoDescTd);
-      newTodoTr.appendChild(newTodoTargetDateTd);
-      newTodoTr.appendChild(newTodoStatusTd);
-      newTodoTr.appendChild(actionsTd);
-
-      var todoTableBody = document.getElementById("todoTable").getElementsByTagName("tbody")[0];
-      todoTableBody.appendChild(newTodoTr);
-    }
-
-    function renderTodoItems(todoList){
-      var todoTableBody = document.getElementById("todoTable").getElementsByTagName("tbody")[0];
-      todoTableBody.innerHTML = "";
-      todoList.forEach(renderListTable);
-    }
-    renderTodoItems(todoList);
-
-    function addNewTodo() {
-      var todoDesc = document.getElementById("todo").value;
-      var targetDate = document.getElementById("target").value;
-      var todoStatus = document.getElementById("status").value || "PENDING";
-      if (editIndex !== null) {
-        // Update existing
-        todoList[editIndex].todoDesc = todoDesc;
-        todoList[editIndex].targetDate = targetDate;
-        todoList[editIndex].todoStatus = todoStatus;
-        editIndex = null;
-      } else {
-        // Add new
-        todoId++;
-        var todo = {
-          todoId: todoId,
-          todoDesc: todoDesc,
-          targetDate: targetDate,
-          todoStatus: todoStatus,
-          createDate: new Date().toLocaleString()
-        };
-        todoList.push(todo);
-      }
-      document.getElementById("todo").value = "";
-      document.getElementById("target").value = "";
-      document.getElementById("status").value = "";
-      renderTodoItems(todoList);
-    }
+      document.getElementById("todoTableBody").appendChild(row);
+      document.getElementById("todoForm").reset();
+    });
   </script>
+
 </body>
 </html>
-        
